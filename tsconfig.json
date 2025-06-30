@@ -1,0 +1,78 @@
+{
+  "compilerOptions": {
+    // Module system to use for generated JavaScript code
+    // "esnext" uses the latest ECMAScript module syntax (import/export)
+    // This is modern and works well with bundlers like Webpack, Vite, etc.
+    "module": "esnext",
+
+    // JavaScript version to compile down to
+    // "es2020" includes features like optional chaining (?.), nullish coalescing (??)
+    // Good balance between modern features and browser compatibility
+    // example: optional chaining allows safe access to nested properties
+    // e.g., const value = obj?.property?.subProperty;
+    // "es2020" is widely supported in modern browsers and Node.js
+    "target": "es2020",
+
+    // How TypeScript resolves module imports
+    // "node" follows Node.js module resolution algorithm
+    // Looks in node_modules, supports package.json, etc.
+    "moduleResolution": "node",
+
+    // Enables interoperability between CommonJS and ES modules
+    // Allows: import express from 'express' instead of import * as express
+    // Essential for working with libraries that use CommonJS
+    "esModuleInterop": true,
+
+    // Works with esModuleInterop to allow default imports from modules
+    // that don't have a default export but are treated as having one
+    // Makes imports cleaner and more intuitive
+    "allowSyntheticDefaultImports": true,
+
+    // Directory where compiled JavaScript files will be output
+    // "./dist" means a 'dist' folder in the same directory as tsconfig.json
+    // Keeps source and compiled code separate for better organization
+    "outDir": "./dist",
+
+    // Enables all strict type checking options at once
+    // Includes noImplicitAny, strictNullChecks, strictFunctionTypes, etc.
+    // Highly recommended for catching bugs early and writing safer code
+    "strict": true,
+
+    // Skip type checking of declaration files (*.d.ts)
+    // Speeds up compilation by not checking types in external libraries
+    // Safe because these files are usually pre-checked by their authors
+    "skipLibCheck": true,
+
+    // Allows importing JSON files as modules
+    // Enables: import config from './config.json'
+    // Useful for configuration files, data files, etc.
+    "resolveJsonModule": true,
+
+    // Ensures file names are treated case-sensitively
+    // Prevents issues when deploying to case-sensitive systems (Linux/macOS)
+    // Helps catch import errors like importing 'File.ts' vs 'file.ts'
+    "forceConsistentCasingInFileNames": true,
+
+    // Controls whether TypeScript emits compiled JavaScript files
+    // "false" means it WILL emit files (compile TypeScript to JavaScript)
+    // Set to "true" if you only want type checking without compilation
+    "noEmit": false,
+
+    // Ensures each file can be safely transpiled without relying on other files
+    // Required for tools like Babel, esbuild, or SWC that compile files individually
+    // Prevents certain TypeScript features that require cross-file analysis
+    "isolatedModules": true,
+
+    // Base directory for resolving non-relative module names
+    // "." means the directory containing tsconfig.json
+    // Used with "paths" option for custom module resolution
+    "baseUrl": ".",
+
+    // Custom module path mapping relative to baseUrl
+    // "*": ["node_modules/*"] means map any module to node_modules
+    // Allows cleaner imports and custom module resolution strategies
+    "paths": {
+      "*": ["node_modules/*"]
+    }
+  }
+}
