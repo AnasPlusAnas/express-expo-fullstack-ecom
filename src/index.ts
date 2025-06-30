@@ -1,9 +1,14 @@
-import express from 'express';
+import express, { json } from 'express';
 import productsRouter from './routes/products';
 
 const app = express();
 const PORT = 3000;
 
+// middlewares
+app.use(express.urlencoded({ extended: false }));
+app.use(json());
+
+// routes
 app.use('/products', productsRouter);
 
 app.listen(PORT, () => {
