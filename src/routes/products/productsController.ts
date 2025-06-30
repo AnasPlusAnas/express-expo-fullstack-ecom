@@ -3,12 +3,21 @@ import { db } from '../../db/index';
 import { productsTable } from '../../db/schema/products';
 import { eq } from 'drizzle-orm';
 
-export async function createProduct(req: Request, res: Response) {
+export async function createProduct(
+  req: Request,
+  res: Response
+): Promise<void> {
   try {
-    const [products] = await db
-      .insert(productsTable)
-      .values(req.body)
-      .returning();
+    // pick the fields from the request body that match the productsTable schema
+    const data = {
+      name: req.body.name,
+      description: req.body.description,
+      image: req.body.image,
+      price: req.body.price,
+      quantity: req.body.quantity,
+    };
+
+    const [products] = await db.insert(productsTable).values(data).returning();
 
     res.status(201).json({
       message: 'Product created successfully!',
@@ -19,7 +28,7 @@ export async function createProduct(req: Request, res: Response) {
   }
 }
 
-export async function listProducts(req: Request, res: Response) {
+export async function listProducts(req: Request, res: Response): Promise<void> {
   try {
     const products = await db.select().from(productsTable);
 
@@ -29,7 +38,10 @@ export async function listProducts(req: Request, res: Response) {
   }
 }
 
-export async function getProductById(req: Request, res: Response) {
+export async function getProductById(
+  req: Request,
+  res: Response
+): Promise<void> {
   try {
     const [products] = await db
       .select()
@@ -37,7 +49,8 @@ export async function getProductById(req: Request, res: Response) {
       .where(eq(productsTable.id, Number(req.params.id)));
 
     if (!products) {
-      return res.status(404).json({ message: 'Product not found' });
+      res.status(404).json({ message: 'Product not found' });
+      return;
     }
 
     res.json(products);
@@ -46,7 +59,10 @@ export async function getProductById(req: Request, res: Response) {
   }
 }
 
-export async function updateProduct(req: Request, res: Response) {
+export async function updateProduct(
+  req: Request,
+  res: Response
+): Promise<void> {
   try {
     const id = Number(req.params.id);
     const updatedFields = req.body;
@@ -58,7 +74,8 @@ export async function updateProduct(req: Request, res: Response) {
       .returning();
 
     if (!updatedProduct) {
-      return res.status(404).json({ message: 'Product not found' });
+      res.status(404).json({ message: 'Product not found' });
+      return;
     }
 
     res.json({
@@ -70,18 +87,22 @@ export async function updateProduct(req: Request, res: Response) {
   }
 }
 
-export async function deleteProduct(req: Request, res: Response) {
+export async function deleteProduct(
+  req: Request,
+  res: Response
+): Promise<void> {
   try {
-    const [deleteProduct] = await db
+    const [deletedProduct] = await db
       .delete(productsTable)
       .where(eq(productsTable.id, Number(req.params.id)))
       .returning();
 
-    if (deleteProduct) {
-      return res.status(204).json({ message: 'Product not found' });
+    if (!deletedProduct) {
+      res.status(404).json({ message: 'Product not found' });
+      return;
     }
 
-    res.status(404).send({ message: 'Product not found!' });
+    res.status(204).send();
   } catch (error) {
     res.status(500).send(error);
   }
