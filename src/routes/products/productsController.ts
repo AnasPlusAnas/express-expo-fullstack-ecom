@@ -1,23 +1,88 @@
 import { Request, Response } from 'express';
+import { db } from '../../db/index';
+import { productsTable } from '../../db/schema/products';
+import { eq } from 'drizzle-orm';
 
-export function listProducts(req: Request, res: Response) {
-  res.send('List of products will be here soon!');
+export async function createProduct(req: Request, res: Response) {
+  try {
+    const [products] = await db
+      .insert(productsTable)
+      .values(req.body)
+      .returning();
+
+    res.status(201).json({
+      message: 'Product created successfully!',
+      product: products,
+    });
+  } catch (error) {
+    res.status(500).send(error);
+  }
 }
 
-export function getProductById(req: Request, res: Response) {
-  res.send(`product ${req.params.id} details will be here soon!`);
+export async function listProducts(req: Request, res: Response) {
+  try {
+    const products = await db.select().from(productsTable);
+
+    res.json(products);
+  } catch (error) {
+    res.status(500).send(error);
+  }
 }
 
-export function createProduct(req: Request, res: Response) {
-  console.log('Product data:', req.body);
+export async function getProductById(req: Request, res: Response) {
+  try {
+    const [products] = await db
+      .select()
+      .from(productsTable)
+      .where(eq(productsTable.id, Number(req.params.id)));
 
-  res.send('Product created successfully!');
+    if (!products) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    res.json(products);
+  } catch (error) {
+    res.status(500).send(error);
+  }
 }
 
-export function updateProduct(req: Request, res: Response) {
-  res.send(`Product ${req.params.id} updated successfully!`);
+export async function updateProduct(req: Request, res: Response) {
+  try {
+    const id = Number(req.params.id);
+    const updatedFields = req.body;
+
+    const [updatedProduct] = await db
+      .update(productsTable)
+      .set(updatedFields)
+      .where(eq(productsTable.id, id))
+      .returning();
+
+    if (!updatedProduct) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    res.json({
+      message: 'Product updated successfully!',
+      product: updatedProduct,
+    });
+  } catch (error) {
+    res.status(500).send(error);
+  }
 }
 
-export function deleteProduct(req: Request, res: Response) {
-  res.send(`Product ${req.params.id} deleted successfully!`);
+export async function deleteProduct(req: Request, res: Response) {
+  try {
+    const [deleteProduct] = await db
+      .delete(productsTable)
+      .where(eq(productsTable.id, Number(req.params.id)))
+      .returning();
+
+    if (deleteProduct) {
+      return res.status(204).json({ message: 'Product not found' });
+    }
+
+    res.status(404).send({ message: 'Product not found!' });
+  } catch (error) {
+    res.status(500).send(error);
+  }
 }
