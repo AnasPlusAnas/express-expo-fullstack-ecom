@@ -10,7 +10,11 @@ import {
   validateCreateProduct,
   validateProductId,
   validateUpdateProduct,
-} from '../../middlewares/validationMiddleware';
+} from '../../middlewares/productValidationMiddleware';
+import {
+  verifyIsSeller,
+  verifyToken,
+} from '../../middlewares/authValidationMiddleware';
 
 const productsRouter = Router();
 
@@ -18,10 +22,28 @@ productsRouter.get('/', listProducts);
 
 productsRouter.get('/:id', validateProductId, getProductById);
 
-productsRouter.post('/', validateCreateProduct, createProduct);
+productsRouter.post(
+  '/',
+  verifyToken,
+  verifyIsSeller,
+  validateCreateProduct,
+  createProduct
+);
 
-productsRouter.put('/:id', validateUpdateProduct, updateProduct);
+productsRouter.put(
+  '/:id',
+  verifyToken,
+  verifyIsSeller,
+  validateUpdateProduct,
+  updateProduct
+);
 
-productsRouter.delete('/:id', validateProductId, deleteProduct);
+productsRouter.delete(
+  '/:id',
+  verifyToken,
+  verifyIsSeller,
+  validateProductId,
+  deleteProduct
+);
 
 export default productsRouter;

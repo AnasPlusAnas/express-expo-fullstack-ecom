@@ -14,3 +14,5 @@ export const productsTable = pgTable('products', {
   price: doublePrecision().notNull(),
   quantity: integer().default(0),
 });
+
+export type ProductType = typeof productsTable.$inferSelect;

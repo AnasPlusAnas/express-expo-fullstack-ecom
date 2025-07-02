@@ -21,7 +21,18 @@ export async function createProduct(
       product: products,
     });
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).json({
+      message: 'Internal server error',
+      errors: [
+        {
+          type: 'server',
+          value: null,
+          msg: error || 'Failed to create product',
+          path: 'server',
+          location: 'internal',
+        },
+      ],
+    });
   }
 }
 
@@ -31,7 +42,18 @@ export async function listProducts(req: Request, res: Response): Promise<void> {
 
     res.json(products);
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).json({
+      message: 'Internal server error',
+      errors: [
+        {
+          type: 'server',
+          value: null,
+          msg: error || 'Failed to retrieve products',
+          path: 'server',
+          location: 'internal',
+        },
+      ],
+    });
   }
 }
 
@@ -46,13 +68,35 @@ export async function getProductById(
       .where(eq(productsTable.id, Number(req.params.id)));
 
     if (!products) {
-      res.status(404).json({ message: 'Product not found' });
+      res.status(404).json({
+        message: 'Product not found',
+        errors: [
+          {
+            type: 'field',
+            value: req.params.id,
+            msg: 'Product with this ID does not exist',
+            path: 'id',
+            location: 'params',
+          },
+        ],
+      });
       return;
     }
 
     res.json(products);
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).json({
+      message: 'Internal server error',
+      errors: [
+        {
+          type: 'server',
+          value: req.params.id,
+          msg: error || 'Failed to retrieve product',
+          path: 'id',
+          location: 'params',
+        },
+      ],
+    });
   }
 }
 
@@ -71,7 +115,18 @@ export async function updateProduct(
       .returning();
 
     if (!updatedProduct) {
-      res.status(404).json({ message: 'Product not found' });
+      res.status(404).json({
+        message: 'Product not found',
+        errors: [
+          {
+            type: 'field',
+            value: req.params.id,
+            msg: 'Product with this ID does not exist',
+            path: 'id',
+            location: 'params',
+          },
+        ],
+      });
       return;
     }
 
@@ -80,7 +135,18 @@ export async function updateProduct(
       product: updatedProduct,
     });
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).json({
+      message: 'Internal server error',
+      errors: [
+        {
+          type: 'server',
+          value: req.params.id,
+          msg: error || 'Failed to update product',
+          path: 'id',
+          location: 'params',
+        },
+      ],
+    });
   }
 }
 
@@ -95,12 +161,34 @@ export async function deleteProduct(
       .returning();
 
     if (!deletedProduct) {
-      res.status(404).json({ message: 'Product not found' });
+      res.status(404).json({
+        message: 'Product not found',
+        errors: [
+          {
+            type: 'field',
+            value: req.params.id,
+            msg: 'Product with this ID does not exist',
+            path: 'id',
+            location: 'params',
+          },
+        ],
+      });
       return;
     }
 
     res.status(204).send();
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).json({
+      message: 'Internal server error',
+      errors: [
+        {
+          type: 'server',
+          value: req.params.id,
+          msg: error || 'Failed to delete product',
+          path: 'id',
+          location: 'params',
+        },
+      ],
+    });
   }
 }
