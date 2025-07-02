@@ -5,16 +5,16 @@ import {
   listProducts,
   updateProduct,
   deleteProduct,
-} from './productsController';
+} from './productsController.js';
 import {
   validateCreateProduct,
   validateProductId,
   validateUpdateProduct,
-} from '../../middlewares/productValidationMiddleware';
+} from '../../middlewares/productValidationMiddleware.js';
 import {
   verifyIsSeller,
   verifyToken,
-} from '../../middlewares/authValidationMiddleware';
+} from '../../middlewares/authValidationMiddleware.js';
 
 const productsRouter = Router();
 

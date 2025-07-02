@@ -72,7 +72,10 @@
     // "*": ["node_modules/*"] means map any module to node_modules
     // Allows cleaner imports and custom module resolution strategies
     "paths": {
-      "*": ["node_modules/*"]
+      "*": ["node_modules/*"],
+      "@/routes/*": ["./routes/*"],
+      "@/middlewares/*": ["./middlewares/*"],
+      "@/db/*": ["./db/*"]
     }
   }
 }

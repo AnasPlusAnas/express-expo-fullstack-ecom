@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { db } from '../../db/index';
-import { usersTable } from '../../db/schema/users';
+import { db } from '../../db/index.js';
+import { usersTable } from '../../db/schema/users.js';
 import { eq } from 'drizzle-orm';
 import * as becrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
