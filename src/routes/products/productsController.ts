@@ -8,16 +8,13 @@ export async function createProduct(
   res: Response
 ): Promise<void> {
   try {
-    // pick the fields from the request body that match the productsTable schema
-    const data = {
-      name: req.body.name,
-      description: req.body.description,
-      image: req.body.image,
-      price: req.body.price,
-      quantity: req.body.quantity,
-    };
+    const { name, description, image, price, quantity } = req.body;
+    const productData = { name, description, image, price, quantity };
 
-    const [products] = await db.insert(productsTable).values(data).returning();
+    const [products] = await db
+      .insert(productsTable)
+      .values(productData)
+      .returning();
 
     res.status(201).json({
       message: 'Product created successfully!',

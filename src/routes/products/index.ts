@@ -6,19 +6,22 @@ import {
   updateProduct,
   deleteProduct,
 } from './productsController';
-import { validateSchema } from '../../middlewares/validationMiddleware';
-import { createProductSchema } from '../../db/schema/products';
+import {
+  validateCreateProduct,
+  validateProductId,
+  validateUpdateProduct,
+} from '../../middlewares/validationMiddleware';
 
 const productsRouter = Router();
 
 productsRouter.get('/', listProducts);
 
-productsRouter.get('/:id', getProductById);
+productsRouter.get('/:id', validateProductId, getProductById);
 
-productsRouter.post('/', validateSchema(createProductSchema), createProduct);
+productsRouter.post('/', validateCreateProduct, createProduct);
 
-productsRouter.put('/:id', updateProduct);
+productsRouter.put('/:id', validateUpdateProduct, updateProduct);
 
-productsRouter.delete('/:id', deleteProduct);
+productsRouter.delete('/:id', validateProductId, deleteProduct);
 
 export default productsRouter;
