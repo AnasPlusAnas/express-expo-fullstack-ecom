@@ -1,17 +1,19 @@
 # 🛒 E-Commerce API
 
-A modern, type-safe REST API built with Node.js, Express, and TypeScript for managing an e-commerce platform. Features user authentication, product management, and order processing with a clean, scalable architecture.
+A type-safe REST API built with Node.js, Express, and TypeScript for managing an e-commerce platform. Features user authentication, product management, and order processing with a clean, scalable architecture.
 
 ## ✨ Features
 
 - 🔐 **JWT Authentication** - Secure user registration and login
 - 👥 **Role-based Access Control** - User and seller permissions
 - 📦 **Product Management** - CRUD operations for products
-- 🛍️ **Order Processing** - Shopping cart and order management
-- ✅ **Data Validation** - Input validation with express-validator
+- 🛍️ **Order Processing** - Complete shopping cart and order management
+- 📋 **Order Items** - Detailed order line items with product references
+- ✅ **Data Validation** - Input validation with Zod schemas
 - 🗃️ **Type-safe Database** - Drizzle ORM with PostgreSQL
 - 🚀 **Cloud Deployment** - Ready for Genezio platform
 - 📝 **TypeScript** - Full type safety and excellent DX
+- 🔧 **Clean Architecture** - Middleware-based validation and authentication
 
 ## 🛠️ Tech Stack
 
@@ -23,6 +25,8 @@ A modern, type-safe REST API built with Node.js, Express, and TypeScript for man
 | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=flat&logo=postgresql&logoColor=white) | Database | Latest |
 | ![Drizzle](https://img.shields.io/badge/Drizzle-000000?style=flat&logo=drizzle&logoColor=white) | ORM | 0.44+ |
 | ![JWT](https://img.shields.io/badge/JWT-000000?style=flat&logo=jsonwebtokens&logoColor=white) | Authentication | Latest |
+| ![Zod](https://img.shields.io/badge/Zod-3E67B1?style=flat&logo=zod&logoColor=white) | Schema Validation | Latest |
+| ![bcryptjs](https://img.shields.io/badge/bcryptjs-FF6B6B?style=flat&logo=lock&logoColor=white) | Password Hashing | Latest |
 
 ## 🚀 Quick Start
 
@@ -48,6 +52,7 @@ A modern, type-safe REST API built with Node.js, Express, and TypeScript for man
    ```env
    DATABASE_URL=postgresql://user:password@host:port/database
    JWT_SECRET=your-super-secret-key
+   NODE_ENV=dev
    ```
 
 3. **Set up the database**
@@ -72,18 +77,25 @@ api/
 │   ├── 📁 db/
 │   │   ├── 📄 index.ts             # Database connection
 │   │   └── 📁 schema/
-│   │       ├── 📄 products.ts      # Product schema
-│   │       └── 📄 users.ts         # User schema
+│   │       ├── 📄 products.ts      # Product schema & validation
+│   │       ├── 📄 users.ts         # User schema & validation
+│   │       └── 📄 orders.ts        # Orders & order items schema
 │   ├── 📁 routes/
 │   │   ├── 📁 auth/
 │   │   │   ├── 📄 index.ts         # Auth routes
 │   │   │   └── 📄 authController.ts # Auth logic
-│   │   └── 📁 products/
-│   │       ├── 📄 index.ts         # Product routes
-│   │       └── 📄 productsController.ts # Product logic
+│   │   ├── 📁 products/
+│   │   │   ├── 📄 index.ts         # Product routes
+│   │   │   └── 📄 productsController.ts # Product logic
+│   │   └── 📁 orders/
+│   │       ├── 📄 index.ts         # Order routes
+│   │       └── 📄 ordersController.ts # Order logic
 │   └── 📁 middlewares/
-│       ├── 📄 authValidationMiddleware.ts    # Auth validation
-│       └── 📄 productValidationMiddleware.ts # Product validation
+│       ├── 📄 authMiddleware.ts    # Auth & role validation
+│       └── 📄 validateData.ts      # Zod schema validation
+├── 📁 types/
+│   └── 📁 express/
+│       └── 📄 index.d.ts           # Express type extensions
 ├── 📁 drizzle/                     # Database migrations
 ├── 📄 drizzle.config.ts            # Drizzle configuration
 ├── 📄 genezio.yaml                 # Deployment config
@@ -107,7 +119,16 @@ api/
 | `GET` | `/products/:id` | Get product by ID | Public |
 | `POST` | `/products` | Create new product | Seller only |
 | `PUT` | `/products/:id` | Update product | Seller only |
-| `DELETE` | `/products/:id` | Delete product | Seller only |
+| `DELETE` | `/products/:id` | Delete product | Public |
+
+### 🛍️ Orders
+
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| `GET` | `/orders` | List user's orders | Authenticated |
+| `GET` | `/orders/:id` | Get order by ID | Authenticated |
+| `POST` | `/orders` | Create new order | Authenticated |
+| `PUT` | `/orders/:id` | Update order status | Authenticated |
 
 ## 📝 API Usage Examples
 
@@ -147,6 +168,26 @@ curl -X POST http://localhost:3000/products \
   }'
 ```
 
+### Create an order
+```bash
+curl -X POST http://localhost:3000/orders \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "order": {},
+    "items": [
+      {
+        "productId": 1,
+        "quantity": 2
+      },
+      {
+        "productId": 2,
+        "quantity": 1
+      }
+    ]
+  }'
+```
+
 ## 🛠️ Development Scripts
 
 | Command | Description |
@@ -166,7 +207,7 @@ curl -X POST http://localhost:3000/products \
   id: number (auto-increment)
   email: string (unique)
   password: string (hashed)
-  role: 'user' | 'seller'
+  role: 'user' | 'seller' (default: 'user')
   name: string
   address?: string
 }
@@ -184,12 +225,49 @@ curl -X POST http://localhost:3000/products \
 }
 ```
 
+### Orders Table
+```typescript
+{
+  id: number (auto-increment)
+  createdAt: timestamp (default: now())
+  status: string (default: 'new')
+  userId: number (foreign key to users)
+}
+```
+
+### Order Items Table
+```typescript
+{
+  id: number (auto-increment)
+  orderId: number (foreign key to orders)
+  productId: number (foreign key to products)
+  quantity: number
+  price: number (calculated from product price)
+}
+```
+
 ## 🔒 Authentication & Authorization
 
-- **JWT tokens** for stateless authentication
+- **JWT tokens** for stateless authentication with 30-day expiration
 - **Role-based access control** (user/seller)
 - **Secure password hashing** with bcryptjs
 - **Token verification middleware** for protected routes
+- **Role-specific middleware** for seller-only operations
+
+## 🛡️ Data Validation
+
+- **Zod schemas** for request validation
+- **Type-safe validation** with automatic TypeScript inference
+- **Clean body middleware** that filters out unwanted fields
+- **Comprehensive error handling** with detailed error messages
+
+## 🏪 Order Management
+
+- **Complete order processing** with order headers and line items
+- **Automatic price calculation** from current product prices
+- **Order status tracking** (new, processing, shipped, delivered)
+- **User-specific order history**
+- **Detailed order items** with product references
 
 ## 🌐 Deployment
 
@@ -200,8 +278,30 @@ This API is configured for deployment on [Genezio](https://genezio.com/):
 genezio deploy
 ```
 
-The `genezio.yaml` configuration handles:
+The [`genezio.yaml`](genezio.yaml) configuration handles:
 - ✅ Automatic builds (`npm run build`)
 - ✅ PostgreSQL database provisioning
 - ✅ Environment variable management
 - ✅ Serverless function deployment
+- ✅ Node.js 20.x runtime
+
+## 📊 Database Migrations
+
+The project uses Drizzle migrations for database schema management:
+
+- **Migration files** in [`drizzle/`](drizzle/) directory
+- **Schema snapshots** for version tracking
+- **Automatic migration generation** based on schema changes
+- **Production-ready migration system**
+
+## 🔧 Middleware Architecture
+
+- **Authentication middleware** ([`authMiddleware.ts`](src/middlewares/authMiddleware.ts))
+  - Token verification
+  - Role-based access control
+- **Data validation middleware** ([`validateData.ts`](src/middlewares/validateData.ts))
+  - Zod schema validation
+  - Request body sanitization
+- **Custom Express types** ([`types/express/index.d.ts`](types/express/index.d.ts))
+  - Extended Request interface
+  - Type-safe middleware integration
